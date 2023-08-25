@@ -21,12 +21,13 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfig {
 
-    /*@Value(value = "${kafka.bootstrapAddress}")
-    private String bootstrapAddress;*/
+    @Value(value = "${kafka.bootstrapAddress}")
+    private String bootstrapAddress;
 
     public Map<String, Object> consumerConfig() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "0.0.0.0:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "foo");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         return props;

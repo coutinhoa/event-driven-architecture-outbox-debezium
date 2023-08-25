@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 services:
   order-postgresql:
@@ -36,25 +36,43 @@ services:
     depends_on:
       - zookeeper
     ports:
+      - 29092:29092
       - 9092:9092
+      - 9101:9101
     environment:
       KAFKA_BROKER_ID: 1
       ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,CLIENT:PLAINTEXT
+      KAFKA_LISTENERS: EXTERNAL://localhost:29092,CLIENT://kafka:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: EXTERNAL
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:29092,CLIENT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR_MIN_INSYNC_REPLICAS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
 
   connect:
     image: quay.io/debezium/connect:latest
     ports:
       - 8083:8083
     depends_on:
-      - kafka
       - order-postgresql
       - shopping-cart-postgresql
+      - kafka
     environment:
-      - BOOTSTRAP_SERVERS=kafka:9092
-      - GROUP_ID=1
-      - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      BOOTSTRAP_SERVERS: kafka:9092,kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      ENABLE_DEBEZIUM_SCRIPTING: "true"
 
   dbz-ui:
     image: quay.io/debezium/debezium-ui:latest
