@@ -1,14 +1,15 @@
 package shoppingcart.controllers;
 
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.http.HttpStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import shoppingcart.dto.ShoppingCartDTO;
 import shoppingcart.entities.ShoppingCart;
 import shoppingcart.services.ShoppingCartService;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Slf4j
@@ -31,4 +32,9 @@ public class ShoppingCartController {
         return ResponseEntity.ok(shoppingCart);
     }
 
+    @PostMapping("/purchase")
+    public ResponseEntity<ShoppingCart> createCart(@RequestBody ShoppingCartDTO shoppingCart) {
+        ShoppingCart createdCart = shoppingCartService.addOrder(shoppingCart);
+        return new ResponseEntity<>(createdCart, HttpStatus.CREATED);
+    }
 }

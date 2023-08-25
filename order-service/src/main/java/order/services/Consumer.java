@@ -15,7 +15,7 @@ public class Consumer {
     
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    @KafkaListener(topics = "Order.events", id = "foo")
+    @KafkaListener(topics = "purchase", id = "foo")
     public void receive(@Payload String data) throws JsonMappingException, JsonProcessingException {
 
         JsonNode event = OBJECT_MAPPER.readValue(data, JsonNode.class);

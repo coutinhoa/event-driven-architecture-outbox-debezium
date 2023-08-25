@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +28,8 @@ public class ShoppingCart implements Serializable {
     @Column(name = "total_price")
     private double totalPrice;
 
-    @Column(name = "created_timestamp", nullable = false)
-    private LocalDateTime createdTimestamp;
+    @Column(name = "created_timestamp")
+    private OffsetDateTime createdTimestamp;
 
     @OneToMany(mappedBy = "shopping_cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

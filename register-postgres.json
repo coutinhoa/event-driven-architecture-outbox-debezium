@@ -1,8 +1,8 @@
 {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "tasks.max": "1",
-    "database.hostname": "order-postgresql",
-    "database.port": "5432",
+    "database.hostname": "localhost",
+    "database.port": "25432",
     "database.user": "user",
     "database.password": "very-secure-password",
     "database.dbname" : "order_db",

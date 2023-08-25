@@ -1,11 +1,15 @@
 package shoppingcart.outbox;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import shoppingcart.dto.ProductDTO;
+import shoppingcart.dto.ShoppingCartDTO;
 import shoppingcart.entities.Product;
 import shoppingcart.entities.ShoppingCart;
 
@@ -13,28 +17,28 @@ public class OrderCreatedEvent implements ExportedEvent {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
-    private final long id;
+    private final Long id;
     private final JsonNode order;
     private final Instant timestamp;
 
-    private OrderCreatedEvent(long id, JsonNode order) {
+    private OrderCreatedEvent(Long id, JsonNode order) {
         this.id = id;
         this.order = order;
         this.timestamp = Instant.now();
     }
 
-    public static OrderCreatedEvent of(ShoppingCart order) {
+    public static OrderCreatedEvent of(ShoppingCartDTO order) {
         ObjectNode asJson = mapper.createObjectNode()
-                .put("id", order.getId())
+                .put("id", String.valueOf(UUID.randomUUID()))
                 .put("userId", order.getUserId())
                 .put("totalPrice", order.getTotalPrice())
                 .put("createdTimestamp", order.getCreatedTimestamp().toString());
 
         ArrayNode items = asJson.putArray("lineItems");
 
-        for (Product product : order.getProducts()) {
+        for (ProductDTO product : order.getProducts()) {
             ObjectNode lineAsJon = mapper.createObjectNode()
-                    .put("productId", product.getId())
+                    .put("productId", product.getProductId())
                     .put("quantity", product.getQuantity());
 
             items.add(lineAsJon);

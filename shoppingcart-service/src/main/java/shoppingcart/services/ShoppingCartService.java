@@ -1,19 +1,35 @@
 package shoppingcart.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shoppingcart.dto.ProductDTO;
 import shoppingcart.dto.ShoppingCartDTO;
 import shoppingcart.entities.Product;
 import shoppingcart.entities.ShoppingCart;
+import shoppingcart.outbox.ExportedEvent;
+import shoppingcart.outbox.OrderCreatedEvent;
+import shoppingcart.outbox.Outbox;
+import shoppingcart.outbox.OutboxRepository;
 import shoppingcart.repositories.ShoppingCartRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ShoppingCartService {
-    private final ShoppingCartRepository shoppingCartRepository;
+
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    ShoppingCartRepository shoppingCartRepository;
+
+    @Autowired
+    OutboxRepository outboxRepository;
 
     @Autowired
     ShoppingCartService(ShoppingCartRepository shoppingCartRepository) {
@@ -23,7 +39,9 @@ public class ShoppingCartService {
         return shoppingCartRepository.findAll();
     }
 
-    public ShoppingCart createCartWithProducts(ShoppingCartDTO orderRequest) {
+    @Transactional
+    public ShoppingCart addOrder(ShoppingCartDTO orderRequest) {
+        System.out.println(orderRequest);
         ShoppingCart shoppingCart = new ShoppingCart();
         shoppingCart.setTotalPrice(orderRequest.getTotalPrice());
         shoppingCart.setUserId(orderRequest.getUserId());
@@ -39,6 +57,25 @@ public class ShoppingCartService {
 
         shoppingCart.setProducts(products);
 
+        final OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.of(orderRequest);
+        System.out.println("orderCreatedEvent: "+ orderCreatedEvent.getPayload());
+        this.outboxRepository.save(of(orderCreatedEvent));
         return shoppingCartRepository.save(shoppingCart);
+    }
+
+    private static Outbox of(ExportedEvent exportedEvent) {
+        Outbox outbox = new Outbox();
+        outbox.setId(UUID.randomUUID());
+        outbox.setAggregateId(exportedEvent.getAggregateId());
+        outbox.setAggregateType(exportedEvent.getAggregateType());
+        outbox.setType(exportedEvent.getType());
+        outbox.setTimestamp(exportedEvent.getTimestamp());
+        try {
+            outbox.setPayload(mapper.writeValueAsString(exportedEvent.getPayload()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("outbox");
+        return outbox;
     }
 }

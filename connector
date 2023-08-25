@@ -1,0 +1,14 @@
+{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "connector.displayName": "PostgreSQL",
+  "topic.prefix": "purchase",
+  "database.user": "postgres",
+  "database.dbname": "shopping_cart_db",
+  "database.hostname": "shopping-cart-postgresql",
+  "database.password": "********************",
+  "name": "shopping-cart-connector",
+  "schema.include.list": "public",
+  "connector.id": "postgres",
+  "table.include.list": "public.outboxevent",
+  "plugin.name": "pgoutput"
+}
